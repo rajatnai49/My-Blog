@@ -1,12 +1,14 @@
-
-namespace aspnet_blog_application.Models;
-
-public class UserModel
+namespace aspnet_blog_application.Models
 {
-    public int Id { get; set; }
+    public class UserModel
+    {
+        public int Id { get; set; }
 
-    public string Name {get; set; }
+        public string Name { get; set; }
 
-    public string Password {get; set; }
+        public string Password { get; set; }
 
+        // Navigation property
+        public List<PostModel> Posts { get; set; }
+    }
 }

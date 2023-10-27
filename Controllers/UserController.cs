@@ -6,6 +6,10 @@ using Microsoft.Data.Sqlite;
 using System.Security.Cryptography;
 using System.Text;
 using aspnet_blog_application.Models.ViewModels;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace aspnet_blog_application.Controllers
 {
@@ -53,7 +57,7 @@ namespace aspnet_blog_application.Controllers
         }
 
         [HttpPost]
-        public IActionResult Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (ModelState.IsValid)
             {
@@ -64,7 +68,7 @@ namespace aspnet_blog_application.Controllers
                     connection.Open();
                     using (var command = connection.CreateCommand())
                     {
-                        command.CommandText = "SELECT name FROM user WHERE name = @Username AND password = @PasswordHash";
+                        command.CommandText = "SELECT id, name FROM user WHERE name = @Username AND password = @PasswordHash";
                         command.Parameters.AddWithValue("@Username", model.Name);
                         command.Parameters.AddWithValue("@PasswordHash", enteredPasswordHash);
 
@@ -72,6 +76,27 @@ namespace aspnet_blog_application.Controllers
                         {
                             if (reader.Read())
                             {
+                                // Create claims for the authenticated user
+                                var claims = new List<Claim>
+                        {
+                            new Claim(ClaimTypes.NameIdentifier, reader["id"].ToString()),
+                            new Claim(ClaimTypes.Name, reader["name"].ToString())
+                            // Add additional claims if needed
+                        };
+
+                                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+                                var authProperties = new AuthenticationProperties
+                                {
+                                    // Customize authentication properties if needed
+                                };
+
+                                // Sign in the user and create the authentication cookie
+                                await HttpContext.SignInAsync(
+                                    CookieAuthenticationDefaults.AuthenticationScheme,
+                                    new ClaimsPrincipal(claimsIdentity),
+                                    authProperties);
+
                                 return RedirectToAction("Index", "Home");
                             }
                             else
@@ -83,6 +108,15 @@ namespace aspnet_blog_application.Controllers
                 }
             }
             return View(model);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            // Sign out the user and remove the authentication cookie
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            return RedirectToAction("Index", "Home");
         }
 
         private string HashPassword(string password)

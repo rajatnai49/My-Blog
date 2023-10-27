@@ -1,23 +1,28 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace aspnet_blog_application.Models;
-
-public class PostModel
+namespace aspnet_blog_application.Models
 {
-    public int Id { get; set; }
+    public class PostModel
+    {
+        public int Id { get; set; }
 
-    public string Title {get; set; }
+        public string Title { get; set; }
 
-    [MaxLength(5000)]
-    public string Body {get; set; }
+        [MaxLength(5000)]
+        public string Body { get; set; }
 
-    [Display(Name = "Created At")]
-    [DataType(DataType.Date)]
-    public DateTime CreatedAt {get; set;}
+        [Display(Name = "Created At")]
+        [DataType(DataType.Date)]
+        public DateTime CreatedAt { get; set; }
 
+        [Display(Name = "Updated At")]
+        [DataType(DataType.Date)]
+        public DateTime UpdatedAt { get; set; }
 
-    [Display(Name = "Updated At")]
-    [DataType(DataType.Date)]
-    public DateTime UpdatedAt {get; set;}
+        // Foreign key
+        public int UserId { get; set; }
 
+        // Navigation property
+        public UserModel User { get; set; }
+    }
 }

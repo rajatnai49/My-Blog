@@ -15,9 +15,9 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
-        ViewBag.IsLoggedIn = HttpContext.Session.GetString("IsLoggedIn");
         return View();
     }
+
 
     public IActionResult Privacy()
     {
